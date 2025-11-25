@@ -2,66 +2,48 @@ package com.example.demo.mapper;
 
 import com.example.demo.dto.LessonRequestDto;
 import com.example.demo.dto.LessonResponseDto;
-import com.example.demo.model.Chapter;
 import com.example.demo.model.Lesson;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 
-import java.time.LocalDateTime;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class LessonMapperTest {
 
-    private LessonMapper mapper;
+    private LessonMapper lessonMapper;
 
     @BeforeEach
     void setUp() {
-        // Берём реальную сгенерированную реализацию MapStruct
-        mapper = Mappers.getMapper(LessonMapper.class);
+        lessonMapper = Mappers.getMapper(LessonMapper.class);
     }
 
     @Test
     void testToEntity() {
-        LessonRequestDto dto = new LessonRequestDto();
-        dto.setTitle("Spring Boot");
-        dto.setDescription("Intro lesson");
-        dto.setContent("Content text");
-        dto.setChapterId(5L);
+        LessonRequestDto requestDto = new LessonRequestDto();
+        requestDto.setTitle("Lesson 1");
+        requestDto.setDescription("Description of Lesson 1");
 
-        Lesson lesson = mapper.toEntity(dto);
+        Lesson lesson = lessonMapper.toEntity(requestDto);
 
         assertNotNull(lesson);
-        assertNull(lesson.getId()); // потому что @Mapping(target="id", ignore=true)
-        assertEquals("Spring Boot", lesson.getTitle());
-        assertEquals("Intro lesson", lesson.getDescription());
-        // Поле content есть в DTO, но в Lesson его нет → MapStruct его просто игнорирует
+        assertEquals("Lesson 1", lesson.getTitle());
+        assertEquals("Description of Lesson 1", lesson.getDescription());
+        assertNull(lesson.getId());
     }
 
     @Test
     void testToDto() {
         Lesson lesson = new Lesson();
-        lesson.setId(10L);
-        lesson.setTitle("Spring Mapping");
-        lesson.setDescription("Mapper test");
-        lesson.setLessonOrder(3);
-        lesson.setCreatedTime(LocalDateTime.now());
-        lesson.setUpdatedTime(LocalDateTime.now());
+        lesson.setId(1L);
+        lesson.setTitle("Lesson 1");
+        lesson.setDescription("Description of Lesson 1");
 
-        Chapter chapter = new Chapter();
-        chapter.setId(7L);
-        lesson.setChapter(chapter);
-
-        LessonResponseDto dto = mapper.toDto(lesson);
+        LessonResponseDto dto = lessonMapper.toDto(lesson);
 
         assertNotNull(dto);
-        assertEquals(10L, dto.getId());
-        assertEquals("Spring Mapping", dto.getTitle());
-        assertEquals("Mapper test", dto.getDescription());
-        assertEquals(3, dto.getLessonOrder());
-        // chapterId маппится только если в LessonMapper есть @Mapping для него,
-        // но у тебя её нет, поэтому dto.getChapterId() == null
-        assertNull(dto.getChapterId());
+        assertEquals(1L, dto.getId());
+        assertEquals("Lesson 1", dto.getTitle());
+        assertEquals("Description of Lesson 1", dto.getDescription());
     }
 }

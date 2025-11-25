@@ -5,8 +5,9 @@ import com.example.demo.dto.CourseResponseDto;
 import com.example.demo.model.Course;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 class CourseMapperTest {
 
@@ -14,36 +15,35 @@ class CourseMapperTest {
 
     @BeforeEach
     void setUp() {
-        // MapStruct автоматически сгенерирует реализацию CourseMapperImpl
-        courseMapper = new CourseMapperImpl();
+        courseMapper = Mappers.getMapper(CourseMapper.class);
     }
 
     @Test
     void testToEntity() {
-        CourseRequestDto dto = new CourseRequestDto();
-        dto.setName("Java Basics");
-        dto.setDescription("Learn Java from scratch");
+        CourseRequestDto requestDto = new CourseRequestDto();
+        requestDto.setName("Java Basics");
+        requestDto.setDescription("Introduction to Java");
 
-        Course course = courseMapper.toEntity(dto);
+        Course course = courseMapper.toEntity(requestDto);
 
-        assertThat(course).isNotNull();
-        assertThat(course.getId()).isNull(); // проверяем, что id игнорируется
-        assertThat(course.getName()).isEqualTo("Java Basics");
-        assertThat(course.getDescription()).isEqualTo("Learn Java from scratch");
+        assertNotNull(course);
+        assertEquals("Java Basics", course.getName());
+        assertEquals("Introduction to Java", course.getDescription());
+        assertNull(course.getId());
     }
 
     @Test
     void testToDto() {
         Course course = new Course();
         course.setId(1L);
-        course.setName("Spring Boot");
-        course.setDescription("Learn Spring Boot");
+        course.setName("Java Basics");
+        course.setDescription("Introduction to Java");
 
         CourseResponseDto dto = courseMapper.toDto(course);
 
-        assertThat(dto).isNotNull();
-        
-        assertThat(dto.getName()).isEqualTo("Spring Boot");
-        assertThat(dto.getDescription()).isEqualTo("Learn Spring Boot");
+        assertNotNull(dto);
+        assertEquals(1L, dto.getId());
+        assertEquals("Java Basics", dto.getName());
+        assertEquals("Introduction to Java", dto.getDescription());
     }
 }

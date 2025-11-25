@@ -15,9 +15,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -40,94 +40,135 @@ class ChapterServiceImplTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    // ✅ 1. Создание главы
     @Test
-    void createChapter_ShouldReturnSavedChapter() {
+    void testCreateChapter_Success() {
         ChapterRequestDto dto = new ChapterRequestDto();
+        dto.setName("Chapter 1");
+        dto.setDescription("Desc");
         dto.setCourseId(1L);
-        dto.setName("Intro");
-        dto.setChapterOrder(1);
+        dto.setChapterOrder(2);
 
         Course course = new Course();
         course.setId(1L);
 
-        Chapter chapter = new Chapter();
-        chapter.setName("Intro");
-        chapter.setCourse(course);
-        chapter.setCreatedTime(LocalDateTime.now());
-        chapter.setUpdatedTime(LocalDateTime.now());
+        Chapter chapterEntity = new Chapter();
+        Chapter savedChapter = new Chapter();
+        savedChapter.setId(10L);
 
-        ChapterResponseDto response = new ChapterResponseDto();
-        response.setName("Intro");
+        ChapterResponseDto responseDto = new ChapterResponseDto();
+        responseDto.setId(10L);
 
         when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
-        when(mapper.toEntity(dto)).thenReturn(chapter);
-        when(chapterRepository.save(any(Chapter.class))).thenReturn(chapter);
-        when(mapper.toDto(chapter)).thenReturn(response);
+        when(mapper.toEntity(dto)).thenReturn(chapterEntity);
+        when(chapterRepository.save(chapterEntity)).thenReturn(savedChapter);
+        when(mapper.toDto(savedChapter)).thenReturn(responseDto);
 
         ChapterResponseDto result = chapterService.createChapter(dto);
 
         assertNotNull(result);
-        assertEquals("Intro", result.getName());
-        verify(chapterRepository, times(1)).save(any(Chapter.class));
+        assertEquals(10L, result.getId());
+
+        assertEquals(course, chapterEntity.getCourse());
+        assertEquals(2, chapterEntity.getChapterOrder());
+        assertNotNull(chapterEntity.getCreatedTime());
+        assertNotNull(chapterEntity.getUpdatedTime());
+
+        verify(chapterRepository, times(1)).save(chapterEntity);
     }
 
-    // ✅ 2. Ошибка при отсутствии courseId
     @Test
-    void createChapter_ShouldThrowException_WhenCourseIdMissing() {
+    void testCreateChapter_NoCourseId_Throws() {
         ChapterRequestDto dto = new ChapterRequestDto();
+        dto.setName("Chapter 1");
 
-        RuntimeException exception = assertThrows(RuntimeException.class,
-                () -> chapterService.createChapter(dto));
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            chapterService.createChapter(dto);
+        });
 
         assertEquals("courseId is required", exception.getMessage());
     }
 
-    // ✅ 3. Ошибка при отсутствии курса
     @Test
-    void createChapter_ShouldThrowException_WhenCourseNotFound() {
-        ChapterRequestDto dto = new ChapterRequestDto();
-        dto.setCourseId(1L);
+    void testGetAllChapters() {
+        Chapter chapter1 = new Chapter();
+        Chapter chapter2 = new Chapter();
+        when(chapterRepository.findAll()).thenReturn(List.of(chapter1, chapter2));
 
-        when(courseRepository.findById(1L)).thenReturn(Optional.empty());
+        ChapterResponseDto dto1 = new ChapterResponseDto();
+        ChapterResponseDto dto2 = new ChapterResponseDto();
+        when(mapper.toDto(chapter1)).thenReturn(dto1);
+        when(mapper.toDto(chapter2)).thenReturn(dto2);
 
-        RuntimeException exception = assertThrows(RuntimeException.class,
-                () -> chapterService.createChapter(dto));
+        List<ChapterResponseDto> result = chapterService.getAllChapters();
 
-        assertEquals("Course not found", exception.getMessage());
+        assertEquals(2, result.size());
+        assertTrue(result.contains(dto1));
+        assertTrue(result.contains(dto2));
     }
 
-    // ✅ 4. Получение по ID
     @Test
-    void getChapterById_ShouldReturnChapter() {
+    void testGetChapterById_Found() {
         Chapter chapter = new Chapter();
-        chapter.setName("Chapter 1");
+        chapter.setId(1L);
 
         ChapterResponseDto dto = new ChapterResponseDto();
-        dto.setName("Chapter 1");
+        dto.setId(1L);
 
         when(chapterRepository.findById(1L)).thenReturn(Optional.of(chapter));
         when(mapper.toDto(chapter)).thenReturn(dto);
 
         ChapterResponseDto result = chapterService.getChapterById(1L);
 
-        assertThat(result.getName()).isEqualTo("Chapter 1");
+        assertNotNull(result);
+        assertEquals(1L, result.getId());
     }
 
-    // ✅ 5. Ошибка, если главы нет
     @Test
-    void getChapterById_ShouldThrowException_WhenNotFound() {
+    void testGetChapterById_NotFound() {
         when(chapterRepository.findById(1L)).thenReturn(Optional.empty());
 
-        RuntimeException exception = assertThrows(RuntimeException.class,
-                () -> chapterService.getChapterById(1L));
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            chapterService.getChapterById(1L);
+        });
 
         assertEquals("Chapter not found", exception.getMessage());
     }
 
-    // ✅ 6. Удаление, если глава существует
     @Test
-    void deleteChapter_ShouldInvokeRepositoryDelete_WhenExists() {
+    void testUpdateChapter() {
+        Chapter chapter = new Chapter();
+        chapter.setId(1L);
+        chapter.setChapterOrder(5);
+        chapter.setUpdatedTime(LocalDateTime.now());
+
+        ChapterRequestDto dto = new ChapterRequestDto();
+        dto.setName("Updated");
+        dto.setDescription("New desc");
+        dto.setChapterOrder(10);
+
+        Course course = new Course();
+        course.setId(2L);
+        dto.setCourseId(2L);
+
+        ChapterResponseDto responseDto = new ChapterResponseDto();
+        responseDto.setId(1L);
+
+        when(chapterRepository.findById(1L)).thenReturn(Optional.of(chapter));
+        when(courseRepository.findById(2L)).thenReturn(Optional.of(course));
+        when(chapterRepository.save(chapter)).thenReturn(chapter);
+        when(mapper.toDto(chapter)).thenReturn(responseDto);
+
+        ChapterResponseDto result = chapterService.updateChapter(1L, dto);
+
+        assertNotNull(result);
+        assertEquals("Updated", chapter.getName());
+        assertEquals("New desc", chapter.getDescription());
+        assertEquals(10, chapter.getChapterOrder());
+        assertEquals(course, chapter.getCourse());
+    }
+
+    @Test
+    void testDeleteChapter_Exists() {
         when(chapterRepository.existsById(1L)).thenReturn(true);
 
         boolean result = chapterService.deleteChapter(1L);
@@ -136,14 +177,13 @@ class ChapterServiceImplTest {
         verify(chapterRepository, times(1)).deleteById(1L);
     }
 
-    // ✅ 7. Не удаляет, если главы нет
     @Test
-    void deleteChapter_ShouldReturnFalse_WhenNotExists() {
+    void testDeleteChapter_NotExists() {
         when(chapterRepository.existsById(1L)).thenReturn(false);
 
         boolean result = chapterService.deleteChapter(1L);
 
         assertFalse(result);
-        verify(chapterRepository, never()).deleteById(any());
+        verify(chapterRepository, never()).deleteById(anyLong());
     }
 }

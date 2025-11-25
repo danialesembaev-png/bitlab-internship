@@ -1,0 +1,96 @@
+services:
+  keycloak:
+    image: 'quay.io/keycloak/keycloak:20.0.3'
+    environment:
+      - KC_DB=postgres
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_DB_URL=jdbc:postgresql://keycloak-db/postgres
+      - KC_DB_USERNAME=postgres
+      - KC_DB_PASSWORD=postgres
+    command:
+      - start-dev
+    ports:
+      - "8080:8080"
+    depends_on:
+      - keycloak-db
+
+  keycloak-db:
+    image: 'postgres:16'
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    ports:
+      - "2345:5432"
+    volumes:
+      - keycloak_data:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://app-db/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      KEYCLOAK_URL: http://keycloak:8080
+      MINIO_URL: http://minio-service:9000
+      MINIO_USER: root
+      MINIO_PASSWORD: root-password
+      MINIO_BUCKET: dev-bucket
+    ports:
+      - "8000:8000"
+    depends_on:
+      - app-db
+      - keycloak
+
+  app-db:
+    image: 'postgres:16'
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+
+    ports:
+      - "5433:5432"
+    volumes:
+      - app_data:/var/lib/postgresql/data
+
+
+  minio-service:
+    image: quay.io/minio/minio
+    ports:
+      - 9000:9000
+      - 9001:9001
+    environment:
+      MINIO_ROOT_USER: root
+      MINIO_ROOT_PASSWORD: root-password
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/ready" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  minio-setup:
+    image: minio/mc
+    depends_on:
+      minio-service:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+        echo Waiting for MinIO to be ready...;
+        mc alias set minio http://minio-service:9000 root root-password;
+        mc rb --force minio/dev-bucket
+        mc mb minio/dev-bucket;
+        echo Bucket created;
+        exit 0;
+      "
+
+
+
+volumes:
+  keycloak_data:
+  app_data:

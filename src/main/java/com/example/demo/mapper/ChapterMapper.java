@@ -11,7 +11,6 @@ public interface ChapterMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "course", ignore = true)
-        // курс будем ставить вручную в сервисе
     Chapter toEntity(ChapterRequestDto dto);
 
     ChapterResponseDto toDto(Chapter chapter);

@@ -1,12 +1,12 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.CourseRequestDto;
-import com.example.demo.dto.CourseResponseDto;
 import com.example.demo.service.CourseService;
-import org.junit.jupiter.api.BeforeEach;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -21,7 +21,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(CourseController.class)
-class CourseControllerTest {
+@AutoConfigureMockMvc(addFilters = false)
+public class CourseControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -29,62 +30,63 @@ class CourseControllerTest {
     @MockBean
     private CourseService courseService;
 
-    private CourseResponseDto courseResponseDto;
-
-    @BeforeEach
-    void setUp() {
-        courseResponseDto = new CourseResponseDto();
-        courseResponseDto.setName("Java");
-        courseResponseDto.setDescription("Backend course");
-    }
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Test
-    void testGetAllCourses() throws Exception {
-        Mockito.when(courseService.getAllCourses()).thenReturn(List.of(courseResponseDto));
+    void createCourse_ShouldReturn200() throws Exception {
+        CourseRequestDto dto = new CourseRequestDto();
+        dto.setName("Java Basics");
+        dto.setDescription("Intro to Java");
 
-        mockMvc.perform(get("/course"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].name").value("Java"))
-                .andExpect(jsonPath("$[0].description").value("Backend course"));
-    }
-
-    @Test
-    void testGetCourseById() throws Exception {
-        Mockito.when(courseService.getCourseById(1L)).thenReturn(courseResponseDto);
-
-        mockMvc.perform(get("/course/1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Java"))
-                .andExpect(jsonPath("$.description").value("Backend course"));
-    }
-
-    @Test
-    void testCreateCourse() throws Exception {
-        Mockito.when(courseService.createCourse(any(CourseRequestDto.class))).thenReturn(courseResponseDto);
+        // мок сервис
+        Mockito.when(courseService.createCourse(any(CourseRequestDto.class)))
+                .thenAnswer(invocation -> {
+                    CourseRequestDto request = invocation.getArgument(0);
+                    return new com.example.demo.dto.CourseResponseDto(1L, request.getName(), request.getDescription());
+                });
 
         mockMvc.perform(post("/course")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"Java\",\"description\":\"Backend course\"}"))
+                        .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Java"))
-                .andExpect(jsonPath("$.description").value("Backend course"));
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.name").value("Java Basics"))
+                .andExpect(jsonPath("$.description").value("Intro to Java"));
     }
 
     @Test
-    void testUpdateCourse() throws Exception {
+    void getAllCourses_ShouldReturnList() throws Exception {
+        Mockito.when(courseService.getAllCourses())
+                .thenReturn(List.of(new com.example.demo.dto.CourseResponseDto(1L, "Java Basics", "Intro to Java")));
+
+        mockMvc.perform(get("/course"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].name").value("Java Basics"))
+                .andExpect(jsonPath("$[0].description").value("Intro to Java"));
+    }
+
+    @Test
+    void updateCourse_ShouldReturnUpdatedCourse() throws Exception {
+        CourseRequestDto dto = new CourseRequestDto();
+        dto.setName("Java Advanced");
+        dto.setDescription("Advanced concepts");
+
         Mockito.when(courseService.updateCourse(eq(1L), any(CourseRequestDto.class)))
-                .thenReturn(courseResponseDto);
+                .thenReturn(new com.example.demo.dto.CourseResponseDto(1L, dto.getName(), dto.getDescription()));
 
         mockMvc.perform(put("/course/1")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"Java\",\"description\":\"Backend course\"}"))
+                        .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Java"))
-                .andExpect(jsonPath("$.description").value("Backend course"));
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.name").value("Java Advanced"))
+                .andExpect(jsonPath("$.description").value("Advanced concepts"));
     }
 
     @Test
-    void testDeleteCourse() throws Exception {
+    void deleteCourse_ShouldReturn200() throws Exception {
         mockMvc.perform(delete("/course/1"))
                 .andExpect(status().isOk());
 

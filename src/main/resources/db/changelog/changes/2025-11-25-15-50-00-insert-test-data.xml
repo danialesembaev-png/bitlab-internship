@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <!-- Courses -->
+    <changeSet id="4-insert-courses" author="TOP G">
+        <insert tableName="courses">
+            <column name="id" valueNumeric="1"/>
+            <column name="name" value="Java Basics"/>
+            <column name="description" value="Course about Java fundamentals"/>
+        </insert>
+        <insert tableName="courses">
+            <column name="id" valueNumeric="2"/>
+            <column name="name" value="Spring Boot"/>
+            <column name="description" value="Learn Spring Boot framework"/>
+        </insert>
+        <insert tableName="courses">
+            <column name="id" valueNumeric="3"/>
+            <column name="name" value="Databases"/>
+            <column name="description" value="Introduction to relational databases"/>
+        </insert>
+    </changeSet>
+
+    <!-- Chapters -->
+    <changeSet id="5-insert-chapters" author="TOP G">
+        <insert tableName="chapters">
+            <column name="id" valueNumeric="1"/>
+            <column name="name" value="Introduction to Java"/>
+            <column name="description" value="Basics of Java programming"/>
+            <column name="course_id" valueNumeric="1"/>
+            <column name="chapter_order" valueNumeric="1"/>
+        </insert>
+        <insert tableName="chapters">
+            <column name="id" valueNumeric="2"/>
+            <column name="name" value="Spring Boot Setup"/>
+            <column name="description" value="Setup and configuration"/>
+            <column name="course_id" valueNumeric="2"/>
+            <column name="chapter_order" valueNumeric="1"/>
+        </insert>
+        <insert tableName="chapters">
+            <column name="id" valueNumeric="3"/>
+            <column name="name" value="SQL Basics"/>
+            <column name="description" value="Learn SQL queries"/>
+            <column name="course_id" valueNumeric="3"/>
+            <column name="chapter_order" valueNumeric="1"/>
+        </insert>
+    </changeSet>
+
+    <!-- Lessons -->
+    <changeSet id="6-insert-lessons" author="TOP G">
+        <insert tableName="lessons">
+            <column name="id" valueNumeric="1"/>
+            <column name="title" value="Variables and Types"/>
+            <column name="description" value="Learn variables and data types in Java"/>
+            <column name="lesson_order" valueNumeric="1"/>
+            <column name="chapter_id" valueNumeric="1"/>
+        </insert>
+        <insert tableName="lessons">
+            <column name="id" valueNumeric="2"/>
+            <column name="title" value="Creating Spring Boot Project"/>
+            <column name="description" value="Hands-on project setup"/>
+            <column name="lesson_order" valueNumeric="1"/>
+            <column name="chapter_id" valueNumeric="2"/>
+        </insert>
+        <insert tableName="lessons">
+            <column name="id" valueNumeric="3"/>
+            <column name="title" value="SELECT Queries"/>
+            <column name="description" value="Introduction to SELECT queries in SQL"/>
+            <column name="lesson_order" valueNumeric="1"/>
+            <column name="chapter_id" valueNumeric="3"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

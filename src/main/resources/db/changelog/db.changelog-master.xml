@@ -11,4 +11,8 @@
 
     <include file="db/changelog/changes/2025-10-20-16-46-00-lesson-table.xml"/>
 
+    <include file="db/changelog/changes/2025-11-24-13-38-00-create-init-tables.xml"/>
+
+    <include file="/db/changelog/changes/2025-11-25-15-50-00-insert-test-data.xml"/>
+
 </databaseChangeLog>

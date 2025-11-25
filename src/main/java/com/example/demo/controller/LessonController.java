@@ -17,7 +17,7 @@ public class LessonController {
         this.lessonService = lessonService;
     }
 
-    @PostMapping
+    @PostMapping("/create")
     public LessonResponseDto createLesson(@RequestBody LessonRequestDto dto) {
         return lessonService.createLesson(dto);
     }

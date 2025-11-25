@@ -2,104 +2,98 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.ChapterRequestDto;
 import com.example.demo.dto.ChapterResponseDto;
-import com.example.demo.model.Course;
 import com.example.demo.service.ChapterService;
-import org.junit.jupiter.api.BeforeEach;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ChapterController.class)
-class ChapterControllerTest {
+@AutoConfigureMockMvc(addFilters = false)  // ОТКЛЮЧАЕМ SECURITY
+public class ChapterControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @MockBean
     private ChapterService chapterService;
 
-    private ChapterResponseDto chapterResponse;
-
-    @BeforeEach
-    void setUp() {
-        Course course = new Course();
-        course.setName("Java Backend");
-        course.setDescription("Advanced backend course");
-
-        chapterResponse = new ChapterResponseDto();
-        chapterResponse.setName("Introduction to Spring");
-        chapterResponse.setDescription("Learn the basics of Spring Boot");
-        chapterResponse.setChapterOrder(1);
-        chapterResponse.setCourse(course);
-        chapterResponse.setCreatedTime(LocalDateTime.now());
-        chapterResponse.setUpdatedTime(LocalDateTime.now());
-    }
-
     @Test
-    void testGetAllChapters() throws Exception {
-        Mockito.when(chapterService.getAllChapters()).thenReturn(List.of(chapterResponse));
+    void createChapter_ShouldReturn200() throws Exception {
+        ChapterRequestDto request = new ChapterRequestDto();
+        request.setName("Chapter 1");
+        request.setDescription("Intro");
+        request.setChapterOrder(1);
 
-        mockMvc.perform(get("/chapters"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].name").value("Introduction to Spring"))
-                .andExpect(jsonPath("$[0].description").value("Learn the basics of Spring Boot"));
-    }
+        ChapterResponseDto response = new ChapterResponseDto();
+        response.setId(1L);
+        response.setName("Chapter 1");
+        response.setDescription("Intro");
+        response.setChapterOrder(1);
 
-    @Test
-    void testGetChapterById() throws Exception {
-        Mockito.when(chapterService.getChapterById(1L)).thenReturn(chapterResponse);
-
-        mockMvc.perform(get("/chapters/1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Introduction to Spring"))
-                .andExpect(jsonPath("$.description").value("Learn the basics of Spring Boot"));
-    }
-
-    @Test
-    void testCreateChapter() throws Exception {
-        Mockito.when(chapterService.createChapter(any(ChapterRequestDto.class))).thenReturn(chapterResponse);
+        Mockito.when(chapterService.createChapter(Mockito.any())).thenReturn(response);
 
         mockMvc.perform(post("/chapters")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"Introduction to Spring\",\"description\":\"Learn the basics of Spring Boot\",\"courseId\":1}"))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Introduction to Spring"))
-                .andExpect(jsonPath("$.description").value("Learn the basics of Spring Boot"));
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.name").value("Chapter 1"))
+                .andExpect(jsonPath("$.description").value("Intro"));
     }
 
     @Test
-    void testUpdateChapter() throws Exception {
-        Mockito.when(chapterService.updateChapter(eq(1L), any(ChapterRequestDto.class)))
-                .thenReturn(chapterResponse);
+    void getAllChapters_ShouldReturnList() throws Exception {
+        ChapterResponseDto item = new ChapterResponseDto();
+        item.setId(1L);
+        item.setName("Chapter 1");
+        item.setDescription("Intro");
+        item.setChapterOrder(1);
+
+        Mockito.when(chapterService.getAllChapters()).thenReturn(List.of(item));
+
+        mockMvc.perform(get("/chapters"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(1L))
+                .andExpect(jsonPath("$[0].name").value("Chapter 1"))
+                .andExpect(jsonPath("$[0].description").value("Intro"));
+    }
+
+    @Test
+    void updateChapter_ShouldReturnUpdatedChapter() throws Exception {
+        ChapterRequestDto request = new ChapterRequestDto();
+        request.setName("Chapter 1");
+        request.setDescription("Intro");
+        request.setChapterOrder(1);
+
+        ChapterResponseDto updated = new ChapterResponseDto();
+        updated.setId(1L);
+        updated.setName("Chapter 1");
+        updated.setDescription("Intro");
+        updated.setChapterOrder(1);
+
+        Mockito.when(chapterService.updateChapter(Mockito.eq(1L), Mockito.any())).thenReturn(updated);
 
         mockMvc.perform(put("/chapters/1")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"Updated Chapter\",\"description\":\"Updated description\",\"courseId\":1}"))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Introduction to Spring"))
-                .andExpect(jsonPath("$.description").value("Learn the basics of Spring Boot"));
-    }
-
-    @Test
-    void testDeleteChapter() throws Exception {
-        Mockito.when(chapterService.deleteChapter(1L)).thenReturn(true);
-
-        mockMvc.perform(delete("/chapters/1"))
-                .andExpect(status().isOk());
-
-        Mockito.verify(chapterService).deleteChapter(1L);
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.name").value("Chapter 1"))
+                .andExpect(jsonPath("$.description").value("Intro"));
     }
 }

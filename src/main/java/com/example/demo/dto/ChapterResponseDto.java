@@ -7,11 +7,12 @@ import java.time.LocalDateTime;
 
 @Data
 public class ChapterResponseDto {
+    private Long id;
     private String name;
     private String description;
     private Integer chapterOrder;
     private Course course;
     private LocalDateTime createdTime;
     private LocalDateTime updatedTime;
-
+    
 }

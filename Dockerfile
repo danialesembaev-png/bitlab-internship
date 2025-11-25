@@ -1,9 +1,10 @@
-FROM openjdk:21-jdk-slim
+FROM eclipse-temurin:21-jdk
 
-#WORKDIR /app
+
 
 COPY build/libs/to-do-0.0.1-SNAPSHOT.jar app.jar
 
-EXPOSE 8081
+EXPOSE 8000
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
+

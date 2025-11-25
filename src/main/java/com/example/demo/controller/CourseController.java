@@ -25,7 +25,7 @@ public class CourseController {
         return courseService.getCourseById(id);
     }
 
-    @PostMapping
+    @PostMapping("/create")
     public CourseResponseDto createCourse(@RequestBody CourseRequestDto dto) {
         return courseService.createCourse(dto);
     }

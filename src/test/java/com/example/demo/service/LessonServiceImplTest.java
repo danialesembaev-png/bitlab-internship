@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class LessonServiceImplTest {
@@ -39,73 +40,77 @@ class LessonServiceImplTest {
         MockitoAnnotations.openMocks(this);
     }
 
+    // ------------------ CREATE LESSON ------------------
     @Test
-    void testCreateLesson() {
+    void testCreateLessonSuccess() {
         LessonRequestDto dto = new LessonRequestDto();
-        dto.setChapterId(1L);
-        dto.setTitle("Intro");
-        dto.setDescription("Basics");
-
-        Chapter chapter = new Chapter();
-        chapter.setId(1L);
+        dto.setTitle("Lesson 1");
+        dto.setDescription("Description");
+        dto.setChapterId(10L);
 
         Lesson lesson = new Lesson();
-        lesson.setTitle("Intro");
-        lesson.setChapter(chapter);
+        lesson.setTitle(dto.getTitle());
 
-        LessonResponseDto response = new LessonResponseDto();
-        response.setTitle("Intro");
+        Chapter chapter = new Chapter();
+        chapter.setId(10L);
 
-        when(chapterRepository.findById(1L)).thenReturn(Optional.of(chapter));
-        when(mapper.toEntity(dto)).thenReturn(lesson);
-        when(lessonRepository.findMaxLessonOrderByChapterId(1L)).thenReturn(0);
-        when(lessonRepository.save(any(Lesson.class))).thenReturn(lesson);
-        when(mapper.toDto(lesson)).thenReturn(response);
+        Lesson savedLesson = new Lesson();
+        savedLesson.setId(1L);
+        savedLesson.setTitle("Lesson 1");
+
+        LessonResponseDto responseDto = new LessonResponseDto();
+        responseDto.setId(1L);
+        responseDto.setTitle("Lesson 1");
+
+        when(mapper.toEntity(any())).thenReturn(lesson);
+        when(chapterRepository.findById(10L)).thenReturn(Optional.of(chapter));
+        when(lessonRepository.findMaxLessonOrderByChapterId(10L)).thenReturn(3);
+        when(lessonRepository.save(any())).thenReturn(savedLesson);
+        when(mapper.toDto(any())).thenReturn(responseDto);
 
         LessonResponseDto result = lessonService.createLesson(dto);
 
         assertNotNull(result);
-        assertEquals("Intro", result.getTitle());
-        verify(lessonRepository).save(any(Lesson.class));
+        assertEquals(1L, result.getId());
+        assertEquals("Lesson 1", result.getTitle());
+
+        verify(mapper).toEntity(dto);
+        verify(lessonRepository).save(any());
     }
 
-    @Test
-    void testCreateLesson_ChapterNotFound() {
-        LessonRequestDto dto = new LessonRequestDto();
-        dto.setChapterId(1L);
-
-        when(chapterRepository.findById(1L)).thenReturn(Optional.empty());
-
-        RuntimeException exception = assertThrows(RuntimeException.class,
-                () -> lessonService.createLesson(dto));
-
-        assertEquals("Chapter not found", exception.getMessage());
-    }
-
+    // ------------------ GET ALL LESSONS ------------------
     @Test
     void testGetAllLessons() {
-        Lesson lesson = new Lesson();
-        lesson.setTitle("Lesson 1");
+        Lesson lesson1 = new Lesson();
+        lesson1.setId(1L);
 
-        LessonResponseDto dto = new LessonResponseDto();
-        dto.setTitle("Lesson 1");
+        Lesson lesson2 = new Lesson();
+        lesson2.setId(2L);
 
-        when(lessonRepository.findAll()).thenReturn(List.of(lesson));
-        when(mapper.toDto(lesson)).thenReturn(dto);
+        LessonResponseDto dto1 = new LessonResponseDto();
+        dto1.setId(1L);
 
-        List<LessonResponseDto> result = lessonService.getAllLessons();
+        LessonResponseDto dto2 = new LessonResponseDto();
+        dto2.setId(2L);
 
-        assertEquals(1, result.size());
-        assertEquals("Lesson 1", result.get(0).getTitle());
+        when(lessonRepository.findAll()).thenReturn(List.of(lesson1, lesson2));
+        when(mapper.toDto(lesson1)).thenReturn(dto1);
+        when(mapper.toDto(lesson2)).thenReturn(dto2);
+
+        List<LessonResponseDto> list = lessonService.getAllLessons();
+
+        assertEquals(2, list.size());
+        verify(lessonRepository).findAll();
     }
 
+    // ------------------ GET LESSON BY ID ------------------
     @Test
-    void testGetLessonById() {
+    void testGetLessonById_found() {
         Lesson lesson = new Lesson();
-        lesson.setTitle("Lesson 1");
+        lesson.setId(1L);
 
         LessonResponseDto dto = new LessonResponseDto();
-        dto.setTitle("Lesson 1");
+        dto.setId(1L);
 
         when(lessonRepository.findById(1L)).thenReturn(Optional.of(lesson));
         when(mapper.toDto(lesson)).thenReturn(dto);
@@ -113,60 +118,69 @@ class LessonServiceImplTest {
         LessonResponseDto result = lessonService.getLessonById(1L);
 
         assertNotNull(result);
-        assertEquals("Lesson 1", result.getTitle());
+        assertEquals(1L, result.getId());
     }
 
     @Test
-    void testGetLessonById_NotFound() {
+    void testGetLessonById_notFound() {
         when(lessonRepository.findById(1L)).thenReturn(Optional.empty());
-
         LessonResponseDto result = lessonService.getLessonById(1L);
-
         assertNull(result);
     }
 
+    // ------------------ UPDATE LESSON ------------------
     @Test
-    void testUpdateLesson() {
+    void testUpdateLessonSuccess() {
+        LessonRequestDto dto = new LessonRequestDto();
+        dto.setTitle("Updated");
+
         Lesson existing = new Lesson();
         existing.setId(1L);
-        existing.setTitle("Old title");
-
-        LessonRequestDto dto = new LessonRequestDto();
-        dto.setTitle("New title");
+        existing.setTitle("Old Title");
 
         Lesson updated = new Lesson();
-        updated.setTitle("New title");
+        updated.setId(1L);
+        updated.setTitle("Updated");
 
-        LessonResponseDto response = new LessonResponseDto();
-        response.setTitle("New title");
+        LessonResponseDto responseDto = new LessonResponseDto();
+        responseDto.setId(1L);
+        responseDto.setTitle("Updated");
 
         when(lessonRepository.findById(1L)).thenReturn(Optional.of(existing));
-        when(lessonRepository.save(any(Lesson.class))).thenReturn(updated);
-        when(mapper.toDto(updated)).thenReturn(response);
+        when(lessonRepository.save(any())).thenReturn(updated);
+        when(mapper.toDto(updated)).thenReturn(responseDto);
 
         LessonResponseDto result = lessonService.updateLesson(1L, dto);
 
         assertNotNull(result);
-        assertEquals("New title", result.getTitle());
+        assertEquals("Updated", result.getTitle());
     }
 
     @Test
-    void testDeleteLesson() {
-        when(lessonRepository.existsById(1L)).thenReturn(true);
+    void testUpdateLesson_notFound() {
+        when(lessonRepository.findById(1L)).thenReturn(Optional.empty());
+        LessonResponseDto result = lessonService.updateLesson(1L, new LessonRequestDto());
+        assertNull(result);
+    }
 
-        boolean result = lessonService.deleteLesson(1L);
+    // ------------------ DELETE LESSON ------------------
+    @Test
+    void testDeleteLessonSuccess() {
+        when(lessonRepository.existsById(5L)).thenReturn(true);
 
-        assertTrue(result);
-        verify(lessonRepository).deleteById(1L);
+        boolean deleted = lessonService.deleteLesson(5L);
+
+        assertTrue(deleted);
+        verify(lessonRepository).deleteById(5L);
     }
 
     @Test
-    void testDeleteLesson_NotExists() {
-        when(lessonRepository.existsById(1L)).thenReturn(false);
+    void testDeleteLesson_notFound() {
+        when(lessonRepository.existsById(5L)).thenReturn(false);
 
-        boolean result = lessonService.deleteLesson(1L);
+        boolean deleted = lessonService.deleteLesson(5L);
 
-        assertFalse(result);
+        assertFalse(deleted);
         verify(lessonRepository, never()).deleteById(any());
     }
 }

@@ -1,6 +1,9 @@
 package com.example.demo.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,11 +23,8 @@ public class Chapter extends BaseEntity {
     @Column(nullable = false)
     private String description;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "course_id", nullable = false)
+    @ManyToOne()
     private Course course;
 
-
-    @Column(name = "order_number", nullable = false)
-    private Integer chapterOrder = 0;
+    private int chapterOrder;
 }

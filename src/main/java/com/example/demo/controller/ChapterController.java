@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/chapters")
+@RequestMapping("/chapter")
 public class ChapterController {
 
     private final ChapterService chapterService;
@@ -18,7 +18,7 @@ public class ChapterController {
         this.chapterService = chapterService;
     }
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<ChapterResponseDto> createChapter(@RequestBody ChapterRequestDto dto) {
         try {
             ChapterResponseDto response = chapterService.createChapter(dto);

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="2025-10-20-16-46-00-create-lesson-table" author="TOP G ">
+
+        <createTable tableName="lessons">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="description" type="TEXT"/>
+            <column name="content" type="TEXT"/>
+
+            <column name="order_number" type="INT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="chapter_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="updated_time" type="TIMESTAMP"/>
+        </createTable>
+
+        <!-- Добавляем внешний ключ -->
+        <addForeignKeyConstraint
+                baseTableName="lessons"
+                baseColumnNames="chapter_id"
+                constraintName="fk_lessons_chapters"
+                referencedTableName="chapters"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+    </changeSet>
+
+</databaseChangeLog>

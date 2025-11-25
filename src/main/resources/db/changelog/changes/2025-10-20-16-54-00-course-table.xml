@@ -1,28 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <databaseChangeLog
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-        xsi:schemaLocation="
-          http://www.liquibase.org/xml/ns/dbchangelog
-          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.17.xsd">
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
-    <changeSet id="2025-10-20-16-54-00-course-table" author="Daniyal">
+    <changeSet id="1-create-courses" author="TOP G">
         <createTable tableName="courses">
-            <column name="id" type="BIGINT" autoIncrement="true">
+            <column name="id" type="bigint" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-
-            <column name="name" type="VARCHAR(255)">
-                <constraints nullable="false"/>
-            </column>
-
-            <column name="description" type="TEXT"/>
-
-            <column name="created_time" type="TIMESTAMP"
-                    defaultValueComputed="CURRENT_TIMESTAMP"/>
-            <column name="updated_time" type="TIMESTAMP"/>
+            <column name="name" type="varchar(255)"/>
+            <column name="description" type="varchar(1000)"/>
+            <column name="created_time" type="timestamp"/>
+            <column name="updated_time" type="timestamp"/>
         </createTable>
     </changeSet>
-
 </databaseChangeLog>

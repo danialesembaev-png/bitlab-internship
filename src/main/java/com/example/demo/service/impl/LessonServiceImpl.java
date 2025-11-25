@@ -37,9 +37,9 @@ public class LessonServiceImpl implements LessonService {
                 .orElseThrow(() -> new RuntimeException("Chapter not found"));
         lesson.setChapter(chapter);
 
-        // Автоматический lessonOrder
         Integer maxOrder = lessonRepository.findMaxLessonOrderByChapterId(chapter.getId());
-        lesson.setLessonOrder((maxOrder == null ? 0 : maxOrder) + 1);
+        int nextOrder = (maxOrder == null) ? 1 : maxOrder + 1;
+        lesson.setLessonOrder(nextOrder);
 
         lesson.setCreatedTime(LocalDateTime.now());
         lesson.setUpdatedTime(LocalDateTime.now());

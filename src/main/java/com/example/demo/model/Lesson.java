@@ -1,6 +1,8 @@
 package com.example.demo.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,10 +21,8 @@ public class Lesson extends BaseEntity {
 
     private String description;
 
-    @Column(name = "lesson_order")
-    private Integer lessonOrder; // ← вот оно! поле не должно быть null
+    private Integer lessonOrder;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chapter_id")
+    @ManyToOne()
     private Chapter chapter;
 }

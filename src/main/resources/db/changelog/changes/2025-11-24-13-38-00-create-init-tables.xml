@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="create-attachment-table" author="TOP G">
+        <createTable tableName="attachments">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="file_name" type="varchar(400)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="initial_name" type="varchar(1000)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="mime_type" type="varchar(100)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="file_size" type="bigint">
+                <constraints nullable="true"/>
+            </column>
+            <column name="lesson_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+                constraintName="fk_attachments_lessons"
+                baseTableName="attachments"
+                baseColumnNames="lesson_id"
+                referencedTableName="lessons"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+    </changeSet>
+
+</databaseChangeLog>
